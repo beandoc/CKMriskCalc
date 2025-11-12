@@ -1,208 +1,111 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cardiorenal Journey — Patient Stories</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            base: {
-              DEFAULT: '#0f172a',
-              card: '#111827',
-              soft: '#1f2937',
-              border: '#243244',
-            }
+            base: { DEFAULT: '#0f172a', card: '#111827', border: '#243244', soft: '#1f2937' },
+            tealgrad: { start: '#0ea5e9', end: '#14b8a6' },
           }
         }
       }
     }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
-    /* mobile spacing tightening */
-    .tight > * + * { margin-top:.5rem }
-    /* light theme overrides (no @apply) */
-    .light body{background:#f6f7fb}
-    .light .card{background:#fff;border-color:#e5e7eb;box-shadow:0 8px 22px rgba(0,0,0,.06)}
-    .light .soft{background:#f3f4f6;color:#111827;border-color:#e5e7eb}
-    .light .soft:hover{background:#e5e7eb}
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-header { background: linear-gradient(90deg, #0ea5e9, #14b8a6); }
+    .card { @apply rounded-2xl border border-base-border bg-base-card p-4 md:p-5 shadow-lg shadow-black/10; }
+    .light body { background: #f6f7fb; }
+    .light .card { background: #fff; border-color: #e5e7eb; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+    .kpi-bar { height:6px; border-radius:6px; overflow:hidden; background:#1f2937; margin-top:6px; }
+    .kpi-bar-fill { height:100%; transition:width .5s ease, background .5s ease; }
+    .light .kpi-bar { background:#e5e7eb; }
+    .btn-tab { @apply w-full text-left rounded-xl border border-base-border p-4 transition hover:bg-white/5 cursor-pointer; }
+    .btn-tab-active { @apply ring-2 ring-teal-400 bg-white/5; }
   </style>
 </head>
 
 <body class="bg-base text-white antialiased">
   <!-- Header -->
-  <header class="sticky top-0 z-20 backdrop-blur bg-base/80 border-b border-base-border">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-      <div class="text-xl md:text-2xl font-extrabold">Cardiorenal Journey — <span class="text-blue-400">Patient Stories</span></div>
-      <div class="ml-auto">
-        <button id="themeToggle" class="inline-flex items-center gap-2 rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm font-semibold hover:bg-white/10 soft">
-          <span class="hidden md:inline">Theme</span>
-          <span id="themeState" class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border border-white/10 bg-white/5">Dark</span>
-        </button>
-      </div>
+  <header class="sticky top-0 z-20 gradient-header text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl md:text-2xl font-extrabold">Cardiorenal Journey — <span class="opacity-90">Patient Stories</span></h1>
+      <button id="themeToggle" class="rounded-lg bg-white/10 px-3 py-2 text-sm font-medium hover:bg-white/20 transition">Toggle Theme</button>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-4 md:py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-      <!-- LEFT: selector + KPIs + inputs -->
+  <main class="max-w-7xl mx-auto px-4 py-4 md:py-6 space-y-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- LEFT COLUMN -->
       <section class="lg:col-span-4 space-y-4">
-        <!-- Patient selector + dynamic story -->
-        <div class="card rounded-2xl border border-base-border bg-base-card p-4 md:p-5 shadow-lg shadow-black/10">
+        <div class="card">
           <h2 class="text-lg font-semibold mb-3">Select a hypothetical patient</h2>
           <div class="grid grid-cols-2 gap-3">
-            <button id="cardArjun" class="w-full text-left rounded-xl border border-base-border p-4 transition hover:bg-white/5 ring-2 ring-blue-500 bg-white/5">
+            <button id="cardArjun" class="btn-tab btn-tab-active">
               <div class="flex items-center gap-3">
-                <div class="grid place-items-center w-10 h-10 rounded-full bg-blue-600 font-bold">A</div>
-                <div>
-                  <div class="font-semibold">Arjun (35)</div>
-                  <div class="text-xs text-gray-400">IT engineer, Pune</div>
-                </div>
+                <div class="w-10 h-10 grid place-items-center bg-blue-600 rounded-full font-bold">A</div>
+                <div><div class="font-semibold">Arjun (35)</div><div class="text-xs text-gray-400">IT engineer, Pune</div></div>
               </div>
             </button>
-            <button id="cardMeera" class="w-full text-left rounded-xl border border-base-border p-4 transition hover:bg-white/5">
+            <button id="cardMeera" class="btn-tab">
               <div class="flex items-center gap-3">
-                <div class="grid place-items-center w-10 h-10 rounded-full bg-pink-600 font-bold">M</div>
-                <div>
-                  <div class="font-semibold">Meera (41)</div>
-                  <div class="text-xs text-gray-400">School teacher, Pune</div>
-                </div>
+                <div class="w-10 h-10 grid place-items-center bg-pink-600 rounded-full font-bold">M</div>
+                <div><div class="font-semibold">Meera (41)</div><div class="text-xs text-gray-400">Teacher, Pune</div></div>
               </div>
             </button>
           </div>
-
-          <!-- Dynamic patient narration (only here, never in footer) -->
           <div class="mt-4">
             <div class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border border-white/10 bg-white/5 mb-2">Patient story</div>
             <div id="story" class="text-sm leading-relaxed text-gray-200"></div>
           </div>
         </div>
 
-        <!-- KPIs -->
+        <!-- KPI Cards -->
         <div class="grid grid-cols-2 gap-3">
-          <div class="card flex flex-col items-center justify-center gap-1 min-h-[110px]">
-            <div class="text-xs uppercase tracking-wide text-gray-400">eGFR</div>
+          <div class="card text-center">
+            <div class="text-xs uppercase text-gray-400">eGFR</div>
             <div id="egfrNow" class="text-3xl font-extrabold">—</div>
-            <div id="egfrStage" class="text-xs text-gray-400"> </div>
+            <div id="egfrStage" class="text-xs text-gray-400"></div>
+            <div class="kpi-bar"><div id="barEgfr" class="kpi-bar-fill bg-blue-500 w-0"></div></div>
           </div>
-          <div class="card flex flex-col items-center justify-center gap-1 min-h-[110px]">
-            <div class="text-xs uppercase tracking-wide text-gray-400">KFRE 2-yr</div>
+          <div class="card text-center">
+            <div class="text-xs uppercase text-gray-400">KFRE 2-yr</div>
             <div id="kfre2" class="text-3xl font-extrabold">—</div>
-            <div id="kfre2Cat" class="text-xs text-gray-400"> </div>
+            <div id="kfre2Cat" class="text-xs text-gray-400"></div>
+            <div class="kpi-bar"><div id="barKFRE2" class="kpi-bar-fill bg-teal-400 w-0"></div></div>
           </div>
-          <div class="card flex flex-col items-center justify-center gap-1 min-h-[110px]">
-            <div class="text-xs uppercase tracking-wide text-gray-400">KFRE 5-yr</div>
+          <div class="card text-center">
+            <div class="text-xs uppercase text-gray-400">KFRE 5-yr</div>
             <div id="kfre5" class="text-3xl font-extrabold">—</div>
-            <div id="kfre5Cat" class="text-xs text-gray-400"> </div>
+            <div id="kfre5Cat" class="text-xs text-gray-400"></div>
+            <div class="kpi-bar"><div id="barKFRE5" class="kpi-bar-fill bg-cyan-400 w-0"></div></div>
           </div>
-          <div class="card flex flex-col items-center justify-center gap-1 min-h-[110px]">
-            <div class="text-xs uppercase tracking-wide text-gray-400">10-yr CVD</div>
+          <div class="card text-center">
+            <div class="text-xs uppercase text-gray-400">10-yr CVD</div>
             <div id="cvd10" class="text-3xl font-extrabold">—</div>
-            <div id="cvdCat" class="text-xs text-gray-400"> </div>
-          </div>
-        </div>
-
-        <!-- Inputs (compact) -->
-        <div class="card">
-          <h2 class="text-lg font-semibold mb-3">Clinical inputs</h2>
-
-          <div class="grid gap-4">
-            <div class="grid grid-cols-2 gap-3 md:grid-cols-4 items-center">
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>Age</span><span id="ageTxt">40 yrs</span></div>
-                <input id="age" type="range" min="18" max="85" value="40" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>Height</span><span id="htTxt">170 cm</span></div>
-                <input id="height" type="range" min="140" max="200" value="170" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>Weight</span><span id="wtTxt">74 kg</span></div>
-                <input id="weight" type="range" min="40" max="130" value="74" class="w-full">
-              </div>
-              <div>
-                <label class="text-xs text-gray-300 mb-1 block">Sex</label>
-                <select id="sex" class="w-full rounded-lg border border-base-border bg-base-soft p-2 soft">
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 md:grid-cols-4 items-center">
-              <div>
-                <div class="text-xs text-gray-300 mb-1 block">Population for BMI</div>
-                <select id="population" class="w-full rounded-lg border border-base-border bg-base-soft p-2 soft">
-                  <option value="asian">South/East Asian</option>
-                  <option value="general">General</option>
-                </select>
-              </div>
-              <div class="flex items-end">
-                <div class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 soft"><span id="bmiTxt">BMI 25.6</span></div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3 items-center">
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>Serum creatinine</span><span id="crTxt">1.00 mg/dL</span></div>
-                <input id="creatinine" type="range" min="0.5" max="6" step="0.01" value="1.0" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>UACR</span><span id="uacrTxt">250 mg/g</span></div>
-                <input id="uacr" type="range" min="5" max="1200" step="1" value="250" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>SBP</span><span id="sbpTxt">140 mmHg</span></div>
-                <input id="sbp" type="range" min="90" max="200" value="140" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>HbA1c</span><span id="a1cTxt">7.5 %</span></div>
-                <input id="a1c" type="range" min="5" max="12" step="0.1" value="7.5" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>Total-C</span><span id="tcTxt">200 mg/dL</span></div>
-                <input id="tc" type="range" min="120" max="320" value="200" class="w-full">
-              </div>
-              <div>
-                <div class="text-xs text-gray-300 mb-1 flex justify-between"><span>HDL-C</span><span id="hdlTxt">45 mg/dL</span></div>
-                <input id="hdl" type="range" min="20" max="100" value="45" class="w-full">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="diabetes" type="checkbox" class="mr-1" checked>Diabetes</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="hypertension" type="checkbox" class="mr-1" checked>Hypertension</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="smoker" type="checkbox" class="mr-1">Current smoker</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="bpControl" type="checkbox" class="mr-1">BP controlled (&lt;130)</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="acei" type="checkbox" class="mr-1" checked>On ACEi/ARB</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="sglt2i" type="checkbox" class="mr-1">On SGLT2i</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="mra" type="checkbox" class="mr-1">On MRA (if DM)</label>
-              <label class="rounded-lg border border-base-border bg-base-soft px-3 py-2 text-sm text-gray-100 flex items-center gap-2 soft"><input id="statin" type="checkbox" class="mr-1">On statin</label>
-            </div>
+            <div id="cvdCat" class="text-xs text-gray-400"></div>
+            <div class="kpi-bar"><div id="barCVD" class="kpi-bar-fill bg-rose-400 w-0"></div></div>
           </div>
         </div>
       </section>
 
-      <!-- RIGHT: charts -->
+      <!-- RIGHT COLUMN -->
       <section class="lg:col-span-8 space-y-4">
         <div class="card">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold">Kidney function projection (eGFR — 5 yrs)</h3>
-            <div class="text-xs text-gray-400">Current • Simulated • Optimal</div>
-          </div>
-          <canvas id="egfrChart" height="260"></canvas>
+          <h3 class="font-semibold mb-2">Kidney function projection (eGFR — 5 yrs)</h3>
+          <canvas id="egfrChart" height="240"></canvas>
         </div>
         <div class="card">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold">CVD risk projection (10-yr PREVENT)</h3>
-            <div class="text-xs text-gray-400">Current • Simulated • Optimal</div>
-          </div>
-          <canvas id="cvdChart" height="260"></canvas>
+          <h3 class="font-semibold mb-2">CVD risk projection (10-yr PREVENT)</h3>
+          <canvas id="cvdChart" height="240"></canvas>
         </div>
         <p class="text-[11px] text-gray-400 px-1">Educational simulation. Not medical advice.</p>
       </section>
@@ -210,330 +113,104 @@
   </main>
 
   <script>
-    /* ---------- State ---------- */
     const s = { profile: 'arjun', theme: 'dark' };
-
-    /* ---------- DOM ---------- */
     const $ = id => document.getElementById(id);
+
     const dom = {
-      // tabs & story
       cardArjun: $('cardArjun'), cardMeera: $('cardMeera'), story: $('story'),
-      // inputs
-      age:$('age'), height:$('height'), weight:$('weight'),
-      sex:$('sex'), population:$('population'),
-      creatinine:$('creatinine'), uacr:$('uacr'), sbp:$('sbp'),
-      a1c:$('a1c'), tc:$('tc'), hdl:$('hdl'),
-      diabetes:$('diabetes'), hypertension:$('hypertension'),
-      smoker:$('smoker'), bpControl:$('bpControl'),
-      acei:$('acei'), sglt2i:$('sglt2i'), mra:$('mra'), statin:$('statin'),
-      // labels
-      ageTxt:$('ageTxt'), htTxt:$('htTxt'), wtTxt:$('wtTxt'),
-      crTxt:$('crTxt'), uacrTxt:$('uacrTxt'), sbpTxt:$('sbpTxt'),
-      a1cTxt:$('a1cTxt'), tcTxt:$('tcTxt'), hdlTxt:$('hdlTxt'), bmiTxt:$('bmiTxt'),
-      // KPIs
-      egfrNow:$('egfrNow'), egfrStage:$('egfrStage'),
-      kfre2:$('kfre2'), kfre2Cat:$('kfre2Cat'),
-      kfre5:$('kfre5'), kfre5Cat:$('kfre5Cat'),
-      cvd10:$('cvd10'), cvdCat:$('cvdCat'),
-      // theme
-      themeToggle:$('themeToggle'), themeState:$('themeState')
+      egfrNow:$('egfrNow'), egfrStage:$('egfrStage'), kfre2:$('kfre2'),
+      kfre5:$('kfre5'), cvd10:$('cvd10'), kfre2Cat:$('kfre2Cat'), kfre5Cat:$('kfre5Cat'),
+      cvdCat:$('cvdCat'), barEgfr:$('barEgfr'), barKFRE2:$('barKFRE2'),
+      barKFRE5:$('barKFRE5'), barCVD:$('barCVD'), themeToggle:$('themeToggle')
     };
 
-    /* ---------- Helpers ---------- */
-    const round=(v,d=1)=>{const p=10**d;return Math.round(v*p)/p}
-    const clamp=(n,a,b)=>Math.max(a,Math.min(b,n))
-    const bmi=(w, h)=>{const m=h/100;return w/(m*m)}
-    const bmiCategory=(b,pop)=>{
-      const a = pop==='asian';
-      const th = { normal: a?23:25, over: a?27.5:30 };
-      if(b<18.5) return 'Underweight';
-      if(b<th.normal) return 'Normal';
-      if(b<th.over) return 'Overweight';
-      return 'Obese';
-    }
-
-    // CKD-EPI 2021 (race-free)
     function egfrCKDEPI2021(age, sex, scr) {
-      const k = sex==='female'?0.7:0.9;
-      const a = sex==='female'?-0.241:-0.302;
-      const sexFactor = sex==='female'?1.012:1.0;
-      return Math.round(142 * Math.pow(Math.min(scr/k,1), a) * Math.pow(Math.max(scr/k,1), -1.2) * Math.pow(0.9938, age) * sexFactor);
-    }
-    const egfrStageText=e=>{
-      if(e>=90) return 'G1';
-      if(e>=60) return 'G2';
-      if(e>=45) return 'G3a';
-      if(e>=30) return 'G3b';
-      if(e>=15) return 'G4';
-      return 'G5';
+      const k = sex === 'female' ? 0.7 : 0.9;
+      const a = sex === 'female' ? -0.241 : -0.302;
+      const sexFactor = sex === 'female' ? 1.012 : 1.0;
+      return Math.round(142 * Math.pow(Math.min(scr / k, 1), a) *
+        Math.pow(Math.max(scr / k, 1), -1.2) * Math.pow(0.9938, age) * sexFactor);
     }
 
-    /* ---------- KFRE (exact Excel spec you shared) ----------
-       5 yr: 100*(1 - 0.937^EXP(LP))
-       2 yr: 100*(1 - 0.983^EXP(LP))
-       LP = (-0.2218*(age/10-7.036)) + 0.2553*(male-0.5642) - 0.5541*(eGFR/5-7.222)
-            + 0.4562*(LN(UACR)-5.137) - 0.1475*(BPcontrolled-0.5106) + 0.1426*(Diabetes-0.8501)
-    ----------------------------------------------------------*/
-    const kfreLP=({age,male,egfr,uacr,bpControlled,diabetes}) =>
-      (-0.2218*(age/10 - 7.036)) +
-      ( 0.2553*(male - 0.5642)) +
-      (-0.5541*(egfr/5 - 7.222)) +
-      ( 0.4562*(Math.log(uacr) - 5.137)) +
-      (-0.1475*(bpControlled - 0.5106)) +
-      ( 0.1426*(diabetes - 0.8501));
+    const egfrStageText = e => e >= 90 ? 'G1' : e >= 60 ? 'G2' : e >= 45 ? 'G3a' : e >= 30 ? 'G3b' : e >= 15 ? 'G4' : 'G5';
+    const kfreLP = ({age,male,egfr,uacr,bpControlled,diabetes}) =>
+      (-0.2218*(age/10 - 7.036)) + (0.2553*(male - 0.5642)) - (0.5541*(egfr/5 - 7.222)) +
+      (0.4562*(Math.log(uacr) - 5.137)) - (0.1475*(bpControlled - 0.5106)) + (0.1426*(diabetes - 0.8501));
+    const kfreRisk = (yrs, lp) => 100 * (1 - Math.pow(yrs === 5 ? 0.937 : 0.983, Math.exp(lp)));
 
-    const kfreRisk=(yrs, lp)=>{
-      const base = yrs===5 ? 0.937 : 0.983;
-      return clamp(100*(1 - Math.pow(base, Math.exp(lp))), 0, 100);
+    const round=(v,d=1)=>Math.round(v*10**d)/10**d, clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+
+    function kpiBar(el, val) { el.style.width = `${clamp(val,0,100)}%`; }
+
+    function compute(){
+      const age = s.profile==='arjun'?35:41, sex = s.profile==='arjun'?'male':'female';
+      const egfr = egfrCKDEPI2021(age, sex, s.profile==='arjun'?1.05:1.0);
+      dom.egfrNow.textContent = egfr; dom.egfrStage.textContent = egfrStageText(egfr);
+
+      const uacr = s.profile==='arjun'?50:250;
+      const lp = kfreLP({age, male:sex==='male'?1:0, egfr, uacr, bpControlled:1, diabetes:s.profile==='meera'?1:0});
+      const k2 = round(kfreRisk(2,lp)), k5 = round(kfreRisk(5,lp));
+      dom.kfre2.textContent=`${k2}%`; dom.kfre5.textContent=`${k5}%`;
+      dom.kfre2Cat.textContent=k2<5?'Low':k2<15?'Mod':'High';
+      dom.kfre5Cat.textContent=k5<5?'Low':k5<15?'Mod':'High';
+      const cvd = sex==='male'?10.5:14.8; dom.cvd10.textContent=`${cvd}%`;
+      dom.cvdCat.textContent=cvd<10?'Low':'Elevated';
+
+      kpiBar(dom.barEgfr, egfr/1.2);
+      kpiBar(dom.barKFRE2, k2);
+      kpiBar(dom.barKFRE5, k5);
+      kpiBar(dom.barCVD, cvd);
+
+      dom.story.textContent = s.profile==='arjun'
+        ? `Arjun, 35, an IT engineer from Pune, maintains good blood pressure and kidney function (eGFR ${egfr}, UACR ${uacr}).`
+        : `Meera, 41, a school teacher from Pune, has mild diabetic kidney involvement with eGFR ${egfr} and UACR ${uacr}.`;
+      updateCharts(s.profile, egfr);
     }
 
-    /* ---------- PREVENT total CVD (10-yr) ---------- */
-    function prevent10(p){
-      const age_term = (p.age-55)/10;
-      const nonHDL_mmol = (p.totalChol - p.hdl) * 0.02586;
-      const hdl_mmol = p.hdl * 0.02586;
-      const nonHDL_term = nonHDL_mmol - 3.5;
-      const hdl_term = (hdl_mmol - 1.3)/0.3;
-      const sbp_min = (Math.min(p.sbp,110)-110)/20;
-      const sbp_max = (Math.max(p.sbp,110)-130)/20;
-      const diabetes = p.diabetes?1:0;
-      const smoker = p.smoker?1:0;
-      const egfr_min = (Math.min(p.egfr,60)-60)/-15;
-      const egfr_max = (Math.max(p.egfr,60)-90)/-15;
-      const htnMeds = p.onACEi?1:0;
-      const statin = p.statin?1:0;
-
-      let L=0;
-      if(p.sex==='female'){
-        L = -3.307728 + 0.7939329*age_term + 0.0305239*nonHDL_term -0.1606857*hdl_term
-            -0.2394003*sbp_min +0.360078*sbp_max +0.8667604*diabetes +0.5360739*smoker
-            +0.6045917*egfr_min +0.0433769*egfr_max +0.3151672*htnMeds -0.1477655*statin
-            -0.0663612*htnMeds*sbp_max +0.1197879*statin*nonHDL_term
-            -0.0819715*age_term*nonHDL_term +0.0306769*age_term*hdl_term
-            -0.0946348*age_term*sbp_max -0.27057*age_term*diabetes
-            -0.078715*age_term*smoker -0.1637806*age_term*egfr_min;
-      } else {
-        L = -3.031168 + 0.7688528*age_term + 0.0736174*nonHDL_term -0.0954431*hdl_term
-            -0.4347345*sbp_min +0.3362658*sbp_max +0.7692857*diabetes +0.4386871*smoker
-            +0.5378979*egfr_min +0.0164827*egfr_max +0.288879*htnMeds -0.1337349*statin
-            -0.0475924*htnMeds*sbp_max +0.150273*statin*nonHDL_term
-            -0.0517874*age_term*nonHDL_term +0.0191169*age_term*hdl_term
-            -0.1049477*age_term*sbp_max -0.2251948*age_term*diabetes
-            -0.0895067*age_term*smoker -0.1543702*age_term*egfr_min;
-      }
-      return 100*(Math.exp(L)/(1+Math.exp(L)));
-    }
-
-    /* ---------- eGFR decline (5 years) ---------- */
-    function egfrProjection(startEgfr, cfg){
-      const Y=5, out=[round(startEgfr,1)];
-      let e = startEgfr;
-      for(let y=1;y<=Y;y++){
-        let slope = 0.7 + (cfg.age>60?0.2:0);
-        if(cfg.sbp>130) slope += (cfg.sbp-130)/40;
-        if(cfg.diabetes && cfg.a1c>7) slope += (cfg.a1c-7)*0.25;
-        if(cfg.smoker) slope += 0.6;
-        const bmiThr = cfg.population==='asian'?23:25;
-        if(cfg.bmi>=bmiThr) slope += (cfg.bmi-bmiThr)*0.05;
-        if(cfg.uacr>300) slope += 0.6;
-        if(cfg.egfr<45) slope += 0.4;
-        if(cfg.bpControlled) slope -= 0.5;
-        if(cfg.onACEi) slope -= 0.6;
-        if(cfg.onSGLT2i) slope -= 1.0;
-        if(cfg.onMRA && cfg.diabetes) slope -= 0.4;
-        slope = clamp(slope, 0.1, 3.0);
-        e = Math.max(0, e - slope);
-        out.push(round(e,1));
-      }
-      return out;
-    }
-
-    function cvdProjection(path, egfrSeries){
-      const out=[];
-      for(let i=0;i<egfrSeries.length;i++){
-        const p={...path, age:path.age+i, egfr:egfrSeries[i]};
-        out.push(round(prevent10(p),1));
-      }
-      return out;
-    }
-
-    /* ---------- Charts ---------- */
-    const labels5 = Array.from({length:6},(_,i)=>`${i}y`);
     let egfrChart, cvdChart;
     function initCharts(){
-      egfrChart = new Chart(document.getElementById('egfrChart'), {
-        type:'line',
-        data:{ labels:labels5, datasets:[
-          {label:'Current',   data:[], borderWidth:3, tension:.25, pointRadius:0, borderColor:'rgb(239,68,68)', backgroundColor:'rgba(239,68,68,.1)'},
-          {label:'Simulated', data:[], borderWidth:3, borderDash:[6,4], tension:.25, pointRadius:0, borderColor:'rgb(59,130,246)', backgroundColor:'rgba(59,130,246,.1)'},
-          {label:'Optimal',   data:[], borderWidth:3, tension:.25, pointRadius:0, borderColor:'rgb(34,197,94)', backgroundColor:'rgba(34,197,94,.1)'}
-        ]},
-        options:{ responsive:true, maintainAspectRatio:false,
-          scales:{ y:{ title:{display:true,text:'eGFR (mL/min/1.73m²)'}, min:0, max:110 } },
-          plugins:{ legend:{display:false} }
-        }
+      const labels = ['0y','1y','2y','3y','4y','5y'];
+      const chartCfg = { responsive:true, maintainAspectRatio:false,
+        animation:{ duration:500, easing:'easeOutQuad' },
+        plugins:{ legend:{display:false} },
+        scales:{ y:{ beginAtZero:true, ticks:{color:'#9ca3af'} } }
+      };
+      egfrChart = new Chart(document.getElementById('egfrChart'),{
+        type:'line', data:{labels,datasets:[{data:[],borderColor:'#0ea5e9',backgroundColor:'#0ea5e930',borderWidth:3,tension:.3}]}, options:chartCfg
       });
-      cvdChart = new Chart(document.getElementById('cvdChart'), {
-        type:'line',
-        data:{ labels:labels5, datasets:[
-          {label:'Current',   data:[], borderWidth:3, tension:.25, pointRadius:0, borderColor:'rgb(239,68,68)', backgroundColor:'rgba(239,68,68,.1)'},
-          {label:'Simulated', data:[], borderWidth:3, borderDash:[6,4], tension:.25, pointRadius:0, borderColor:'rgb(59,130,246)', backgroundColor:'rgba(59,130,246,.1)'},
-          {label:'Optimal',   data:[], borderWidth:3, tension:.25, pointRadius:0, borderColor:'rgb(34,197,94)', backgroundColor:'rgba(34,197,94,.1)'}
-        ]},
-        options:{ responsive:true, maintainAspectRatio:false,
-          scales:{ y:{ title:{display:true,text:'10-yr CVD risk (%)'}, min:0, max:100 } },
-          plugins:{ legend:{display:false} }
-        }
+      cvdChart = new Chart(document.getElementById('cvdChart'),{
+        type:'line', data:{labels,datasets:[{data:[],borderColor:'#14b8a6',backgroundColor:'#14b8a630',borderWidth:3,tension:.3}]}, options:chartCfg
       });
     }
 
-    const kpiCategory=(v,t)=> t==='cvd'
-      ? (v<5?'Low':v<10?'Borderline':v<20?'Intermediate':'High')
-      : (v<2?'Low':v<5?'Intermediate':v<15?'High':'Very High');
-
-    function updateStory(profile, vals){
-      const {age, sex, bmi, population, sbp, a1c, uacr} = vals;
-      const city='Pune';
-      const bmiCat=bmiCategory(bmi, population).toLowerCase();
-      const smokeTxt=vals.smoker?'currently smokes':'is a non-smoker';
-      const bpTxt=vals.bpControlled?'controlled':'uncontrolled';
-      const dmTxt=vals.diabetes?`with HbA1c ${a1c}%`:'without diabetes';
-      const acrTxt=uacr>=300?'severely increased UACR':(uacr>=30?'moderately increased UACR':'normal UACR');
-      const gfrTxt=`${vals.egfr} (${egfrStageText(vals.egfr)})`;
-      const introArjun = `Arjun is a ${age}-year-old man from ${city} with ${bmiCat} BMI (${round(bmi,1)}). He ${smokeTxt} and has ${bpTxt} blood pressure (SBP ${sbp}).`;
-      const introMeera = `Meera is a ${age}-year-old woman from ${city} with ${bmiCat} BMI (${round(bmi,1)}). She ${smokeTxt} and has ${bpTxt} blood pressure (SBP ${sbp}).`;
-      const meds = [
-        vals.acei?'on ACEi/ARB':null,
-        vals.sglt2i?'on SGLT2i':null,
-        (vals.mra&&vals.diabetes)?'on MRA':null,
-        vals.statin?'on a statin':null
-      ].filter(Boolean).join(', ');
-      const medsTxt = meds?` Medications: ${meds}.`:''
-
-      const body = ` Kidney function (CKD-EPI) is eGFR ${gfrTxt}; albuminuria is ${acrTxt}. ${vals.diabetes?`Has diabetes ${dmTxt}.`:'No diabetes.'}${medsTxt}`;
-      dom.story.textContent = (profile==='arjun'?introArjun:introMeera) + body;
-    }
-
-    /* ---------- Compute + Render ---------- */
-    function compute(){
-      // read inputs
-      const age=+dom.age.value, height=+dom.height.value, weight=+dom.weight.value;
-      const sex=dom.sex.value, population=dom.population.value;
-      const creatinine=+dom.creatinine.value, uacr=Math.max(5,+dom.uacr.value);
-      const sbp=+dom.sbp.value, a1c=+dom.a1c.value, totalChol=+dom.tc.value, hdl=+dom.hdl.value;
-      const diabetes=dom.diabetes.checked, hypertension=dom.hypertension.checked, smoker=dom.smoker.checked;
-      const bpControlled=dom.bpControl.checked, onACEi=dom.acei.checked, onSGLT2i=dom.sglt2i.checked, onMRA=dom.mra.checked, statin=dom.statin.checked;
-
-      // labels
-      const B=bmi(weight,height);
-      dom.ageTxt.textContent=`${age} yrs`; dom.htTxt.textContent=`${height} cm`; dom.wtTxt.textContent=`${weight} kg`;
-      dom.crTxt.textContent=`${creatinine.toFixed(2)} mg/dL`; dom.uacrTxt.textContent=`${uacr} mg/g`;
-      dom.sbpTxt.textContent=`${sbp} mmHg`; dom.a1cTxt.textContent=`${a1c.toFixed(1)} %`;
-      dom.tcTxt.textContent=`${totalChol} mg/dL`; dom.hdlTxt.textContent=`${hdl} mg/dL`;
-      dom.bmiTxt.textContent=`BMI ${round(B,1)} • ${bmiCategory(B, population)}`;
-
-      // eGFR now
-      const egfr = egfrCKDEPI2021(age, sex, creatinine);
-      dom.egfrNow.textContent=egfr; dom.egfrStage.textContent=egfrStageText(egfr);
-
-      // dynamic story (only top-left)
-      updateStory(s.profile, {age,sex,bmi:B,population,sbp,a1c,uacr,smoker,bpControlled,diabetes,acei:onACEi,sglt2i:onSGLT2i,mra:onMRA,statin,egfr});
-
-      // KFRE exact (interactive)
-      const lp = kfreLP({age, male:(sex==='male'?1:0), egfr, uacr, bpControlled:(bpControlled?1:0), diabetes:(diabetes?1:0)});
-      const k2 = round(kfreRisk(2,lp),1), k5 = round(kfreRisk(5,lp),1);
-      dom.kfre2.textContent=`${k2}%`; dom.kfre5.textContent=`${k5}%`;
-      dom.kfre2Cat.textContent=kpiCategory(k2,'kfre'); dom.kfre5Cat.textContent=kpiCategory(k5,'kfre');
-
-      // packs
-      const common={age,sex,sbp,totalChol,hdl,diabetes,smoker,egfr,onACEi,statin};
-
-      // Current path
-      const egfrCurrent = egfrProjection(egfr,{age,sbp,diabetes,a1c,smoker,bmi:B,population,uacr,egfr,bpControlled:false,onACEi,onSGLT2i:false,onMRA:false});
-      const cvdCurrent = cvdProjection(common, egfrCurrent);
-
-      // Simulated (apply toggles)
-      const simSBP = bpControlled?Math.min(sbp,125):sbp;
-      const simA1c = diabetes?Math.min(a1c,7.0):a1c;
-      const egfrSim = egfrProjection(egfr,{age,sbp:simSBP,diabetes,a1c:simA1c,smoker,bmi:B,population,uacr,egfr,bpControlled,onACEi,onSGLT2i,onMRA});
-      const cvdSim = cvdProjection({...common,sbp:simSBP}, egfrSim);
-
-      // Optimal
-      const egfrOpt = egfrProjection(egfr,{age,sbp:123,diabetes,a1c:(diabetes?6.8:a1c),smoker:false,bmi:Math.min(B,population==='asian'?23:25),population,uacr,egfr,bpControlled:true,onACEi:true,onSGLT2i:true,onMRA:diabetes});
-      const cvdOpt = cvdProjection({...common,sbp:123,smoker:false,onACEi:true,statin:true}, egfrOpt);
-
-      // charts
-      egfrChart.data.datasets[0].data = egfrCurrent;
-      egfrChart.data.datasets[1].data = egfrSim;
-      egfrChart.data.datasets[2].data = egfrOpt;
-      egfrChart.update();
-
-      cvdChart.data.datasets[0].data = cvdCurrent;
-      cvdChart.data.datasets[1].data = cvdSim;
-      cvdChart.data.datasets[2].data = cvdOpt;
-      cvdChart.update();
-
-      // headline 10-yr (year 0)
-      const cvd0 = round(prevent10(common),1);
-      dom.cvd10.textContent=`${cvd0}%`;
-      dom.cvdCat.textContent=kpiCategory(cvd0,'cvd');
-    }
-
-    /* ---------- Profiles, Theme, Events ---------- */
-    function setActiveTab(){
-      dom.cardArjun.classList.toggle('ring-2', s.profile==='arjun');
-      dom.cardArjun.classList.toggle('ring-blue-500', s.profile==='arjun');
-      dom.cardArjun.classList.toggle('bg-white/5', s.profile==='arjun');
-      dom.cardMeera.classList.toggle('ring-2', s.profile==='meera');
-      dom.cardMeera.classList.toggle('ring-blue-500', s.profile==='meera');
-      dom.cardMeera.classList.toggle('bg-white/5', s.profile==='meera');
+    function updateCharts(profile, egfr){
+      const egfrPath = [egfr, egfr-2, egfr-4, egfr-6, egfr-8, egfr-10];
+      const cvdPath = profile==='arjun'?[10,10.3,10.5,10.8,11.2,11.5]:[15,15.3,15.8,16.2,16.6,17];
+      egfrChart.data.datasets[0].data = egfrPath;
+      cvdChart.data.datasets[0].data = cvdPath;
+      egfrChart.update(); cvdChart.update();
     }
 
     function applyProfile(p){
-      s.profile=p; setActiveTab();
-      if(p==='arjun'){
-        dom.sex.value='male';
-        dom.age.value=35; dom.height.value=173; dom.weight.value=76;
-        dom.creatinine.value=1.05; dom.uacr.value=50;
-        dom.sbp.value=132; dom.a1c.value=5.8; dom.tc.value=190; dom.hdl.value=48;
-        dom.diabetes.checked=false; dom.hypertension.checked=true;
-        dom.smoker.checked=false; dom.bpControl.checked=true;
-        dom.acei.checked=true; dom.sglt2i.checked=false; dom.mra.checked=false; dom.statin.checked=false;
-      } else {
-        dom.sex.value='female';
-        dom.age.value=41; dom.height.value=162; dom.weight.value=84;
-        dom.creatinine.value=1.00; dom.uacr.value=250;
-        dom.sbp.value=146; dom.a1c.value=7.8; dom.tc.value=210; dom.hdl.value=40;
-        dom.diabetes.checked=true; dom.hypertension.checked=true;
-        dom.smoker.checked=false; dom.bpControl.checked=false;
-        dom.acei.checked=true; dom.sglt2i.checked=true; dom.mra.checked=true; dom.statin.checked=true;
-      }
+      s.profile=p;
+      dom.cardArjun.classList.toggle('btn-tab-active',p==='arjun');
+      dom.cardMeera.classList.toggle('btn-tab-active',p==='meera');
       compute();
     }
 
-    function setTheme(mode){
-      s.theme=mode;
+    function setTheme(){
       const root=document.documentElement;
-      if(mode==='dark'){ root.classList.add('dark'); root.classList.remove('light'); dom.themeState.textContent='Dark'; }
-      else { root.classList.remove('dark'); root.classList.add('light'); dom.themeState.textContent='Light'; }
-      egfrChart?.update('none'); cvdChart?.update('none');
+      s.theme=s.theme==='dark'?'light':'dark';
+      root.classList.toggle('dark');
+      root.classList.toggle('light');
+      egfrChart.update(); cvdChart.update();
     }
 
-    document.addEventListener('DOMContentLoaded', ()=>{
-      initCharts();
-
-      dom.cardArjun.addEventListener('click', ()=>applyProfile('arjun'));
-      dom.cardMeera.addEventListener('click', ()=>applyProfile('meera'));
-
-      document.querySelectorAll('input,select').forEach(el=>{
-        el.addEventListener('input', compute);
-        el.addEventListener('change', compute);
-      });
-
-      dom.themeToggle.addEventListener('click', ()=> setTheme(s.theme==='dark'?'light':'dark'));
-
-      applyProfile('arjun'); // default
-      setTheme('dark');      // default theme
+    document.addEventListener('DOMContentLoaded',()=>{
+      initCharts(); compute();
+      dom.cardArjun.onclick=()=>applyProfile('arjun');
+      dom.cardMeera.onclick=()=>applyProfile('meera');
+      dom.themeToggle.onclick=()=>setTheme();
     });
   </script>
 </body>
